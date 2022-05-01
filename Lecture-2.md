@@ -36,6 +36,7 @@
   	
   	Or we can directly use
   ```
+  #pragma once
   ...
   ```
 
