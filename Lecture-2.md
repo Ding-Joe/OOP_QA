@@ -12,7 +12,7 @@
 		std::string type_;  //member variables
 		Computer(const std::string& type) : type_(type) {}    //member functions
 	};
-
+	
 	int main()
 	{
 		Computer A("lenovo");
@@ -28,16 +28,16 @@
   - The definitions of member functions can be included in a source file, which helps hide the implementations details. In this way, we may only provide the header file and the library (compiled from the source files) to the users, without exposing the implementation details.
   - To avoid multiple inclusion of the same header in a source file, we should place an include guard. i.e.
   	```cpp
-	#ifndef XXX
-	#define XXX
-	...
-	#endif
-	```
-    or we can directly use
-    ```cpp
-    #pragma once
-    ...
-    ```
+		#ifndef XXX
+		#define XXX
+		...
+		#endif
+		```
+  	
+  	Or we can directly use
+  ```
+  ...
+  ```
 
 #### 3.	Please try to explain why the designers want to organize data and functions into classes? What are the advantages and disadvantages?
 
@@ -68,7 +68,7 @@ private:
 
 #### 5.	Please try to explain the benefits of access control.
 
-- By access control, the class designer can set the class interfaces as "`public`", and set the implementations as "`private`". The separation between interfaces and implementations makes the class easier to use. On the one hand, the client user does not need to worry about the implementation details. On the other hand, the class designer can easily modify the implentation details without affecting the user program (as the interfaces do not change).
+- By access control, the class designer can set the class interfaces as "`public`", and set the implementations as "`private`". The separation between interfaces and implementations makes the class easier to use. On the one hand, the client user does not need to worry about the implementation details. On the other hand, the class designer can easily modify the implementation details without affecting the user program (as the interfaces do not change).
 
 #### 6.	Please tell the differences between keywords public, private and protected. We know that access control works for objects of the class. Does access control work in member functions of this class? I.e., is it possible that one member function cannot access another member?
 
@@ -209,10 +209,84 @@ This occurs because the declaration of class `Computer` is included twice, and `
 #### 14. What does **this** pointer mean? How to avoid the name conflicts (名字冲突) between member and non-member variables with this pointer? How to return the current object in member functions?
 
 - "`this`" is a constant pointer that points to the address of the current object. It cannot be changed, and is typically used to identify member variables/functions when name conflicts occur.
-- To avoid name conflicts: in a member function, `this -> x` refers to the member variable named `x`.
-- To return the current object in a member function: `return * this;`
 
-##	Memory allocation
+- To avoid name conflicts: in a member function, `this -> x` refers to the member variable named `x`.
+
+- ~~To return the current object in a member function: `return * this;`~~
+  `return  *this` does not return the current object, instead creating a copy of it. This code might explain:
+
+- ```C++
+  #include <iostream>
+  using namespace std;
+  
+  class C {
+  	int p;
+  public:
+  	C() :p(0) {}
+  	~C() = default;
+      
+      //This function does not return the current object!
+  	C get() { return *this; };
+  	int call() { return p; };
+  	C* modify(int r) { p = r; return this; }
+  
+  };
+  
+  int main() {
+  	C obj;
+  	cout << obj.get().modify(7)->call() << endl;
+  	cout << obj.call() << endl;
+  	return 0;
+  }
+  ```
+
+  Run it and it prints:
+
+  ```
+  7
+  0
+  ```
+
+  Clearly `get()` is not returning the current object. To avoid such mistake we might change`C get(){ ... return *this}` into
+
+  ```C++
+  C& get(){
+      ...
+      return *this;
+  }
+  ```
+
+  The output would be
+
+  ```
+  7
+  7
+  ```
+
+  or we can write
+
+  ```c++
+  C* get(){
+      ...
+      return this;
+  }
+  ```
+
+  Note that this function returns a pointer. The code that works should look like this:
+
+  ```c++
+  cout << obj.get()->modify(7)->call() << endl;
+  ```
+
+  The output would also be
+
+  ```
+  7
+  7
+  ```
+
+## Memory allocation
+
 #### 15.	What are the differences between new/delete and malloc/free?
 
 - `malloc`/`free` are library functions. `new`/`delete` are C++ operators.
